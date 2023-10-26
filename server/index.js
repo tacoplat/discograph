@@ -98,3 +98,5 @@ app.get("/callback", function (req, res) {
     });
   }
 });
+
+module.exports = app;
