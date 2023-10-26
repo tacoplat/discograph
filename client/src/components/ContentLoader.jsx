@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
-import { Disc } from "./Disc";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
+import { Disc } from "./Disc";
 import { colors } from "./shared/colors";
 import { ProviderContext } from "./ProviderContext";
 import { getRecommendations, getTopTracks } from "../requests/spotify";
