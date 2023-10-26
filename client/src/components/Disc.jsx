@@ -1,10 +1,27 @@
+import { useContext } from "react";
 import { colors } from "./shared/colors";
 import styled from "styled-components";
+import { ProviderContext } from "./ProviderContext";
 
 const FlexBase = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+`;
+
+const DiscBox = styled(FlexBase)`
+  max-width: 16rem;
+  text-align: center;
+  flex-direction: column;
+  flex-wrap: column;
+  row-gap: 1rem;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+`;
+
+const ArtistText = styled.h5`
+  line-height: 0;
 `;
 
 const Circular = styled(FlexBase)`
@@ -74,10 +91,13 @@ const DiscHole = styled(Circular)`
 `;
 
 export const Disc = ({ onClick, disc }) => {
+  const { authed } = useContext(ProviderContext);
+
   return (
-    <>
+    <DiscBox>
+      <h4>{authed && disc.name}</h4>
       <DiscBackground onClick={onClick}>
-        <DiscHole background={disc.background} />
+        <DiscHole background={disc?.album?.images[0].url} />
         <DiscOverlay viewBox="0 0 100 100" preserveAspectRatio="none">
           <polygon
             points="50 50,
@@ -90,6 +110,12 @@ export const Disc = ({ onClick, disc }) => {
           />
         </DiscOverlay>
       </DiscBackground>
-    </>
+      <div>
+        {authed &&
+          disc.artists.map((artist) => (
+            <ArtistText key={artist.id}>{artist.name}</ArtistText>
+          ))}
+      </div>
+    </DiscBox>
   );
 };

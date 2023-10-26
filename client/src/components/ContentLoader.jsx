@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { Disc } from "./Disc";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { colors } from "./shared/colors";
+import { ProviderContext } from "./ProviderContext";
+import { getRecommendations, getTopTracks } from "../requests/spotify";
 
 const NoSelect = styled.div`
   -webkit-user-select: none;
@@ -52,8 +54,8 @@ const Instructions = styled(NoSelect)`
   width: 100%;
   text-align: center;
   animation: ${(props) =>
-      props.show > 1 && "0.5s linear 0s 1 normal both running hide, "}
-    1.4s ease-out 0s 1 fadeIn;
+      props.show > 1 && "0.3s linear 0s 1 normal both running hide, "}
+    0.3s ease-out 0s 1 fadeIn;
 `;
 
 const BouncingArrow = styled(KeyboardDoubleArrowDownIcon)`
@@ -73,17 +75,27 @@ const BouncingArrow = styled(KeyboardDoubleArrowDownIcon)`
   animation: 1s infinite bounce;
 `;
 
+const randomInt = (low, high) => Math.floor(Math.random() * (high - low) + low);
+
 export const ContentLoader = () => {
   const [records, setRecords] = useState([]);
+
+  const { authed, getToken } = useContext(ProviderContext);
+  const token = getToken();
+
   useEffect(() => {
-    setRecords([
-      {
-        id: 1,
-        background:
-          "https://upload.wikimedia.org/wikipedia/en/5/51/Igor_-_Tyler%2C_the_Creator.jpg",
-      },
-    ]);
-  }, []);
+    async function updateRecords() {
+      if (authed) {
+        const tracks = (await getTopTracks(token))?.data;
+        console.log(tracks);
+        if (tracks) {
+          setRecords(tracks.items.slice(0, 5));
+        }
+      }
+    }
+    updateRecords();
+  }, [authed, token]);
+
   return (
     <ContentLoaderBase>
       <Instructions show={records.length}>
@@ -91,14 +103,35 @@ export const ContentLoader = () => {
         <h3>Click the record to start.</h3>
         <BouncingArrow />
       </Instructions>
-      {records.map((record) => (
+      {!authed && (
         <Disc
-          disc={record}
+          disc={{}}
           onClick={() => {
-            setRecords([...records, { id: record.id + 1 }]);
+            window.location.assign(`${process.env.REACT_APP_API_URI}/login`);
           }}
         />
-      ))}
+      )}
+      {authed &&
+        records.map((record) => (
+          <Disc
+            key={record.id}
+            disc={record}
+            onClick={async () => {
+              const recommendations = (await getRecommendations(token, record))
+                ?.data;
+
+              const currentIdx = records.findIndex(
+                (track) => track.id === record.id
+              );
+              const newTrack = recommendations.tracks[randomInt(0, 20)];
+
+              const updatedRecords = [...records];
+              updatedRecords.splice(currentIdx, 1, newTrack);
+
+              setRecords(updatedRecords);
+            }}
+          />
+        ))}
     </ContentLoaderBase>
   );
 };

@@ -1,9 +1,12 @@
 import { ContentLoader } from "./components/ContentLoader";
+import { Provider } from "./components/Provider";
 
 function App() {
   return (
     <div className="App">
-      <ContentLoader></ContentLoader>
+      <Provider>
+        <ContentLoader />
+      </Provider>
     </div>
   );
 }
